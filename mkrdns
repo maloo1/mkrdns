@@ -49,7 +49,7 @@ my ($rootdir)  = "/";    # root directory for files
 my ( $i, @domains, %networks, %maps, %serial, %mips, %hash, %netmap, @toskip );
 my ( %zonetoskip, $nameddir, %numordate, %files, $toskip, $ignoreslaves );
 my ( %mcnames, %arpa );
-my ($pversion)  = "3.4";
+my ($pversion)  = "3.5";
 my ($whichhash) = undef;    # which hash function to use
 
 # Get commandline parameters
@@ -108,11 +108,9 @@ if ( $ext =~ /^\./ ) {    # Remove the '.'s from the start of the extention ...
 
 if ($debug) {
   print "Debugging turned on.\n", "Version     = $pversion\n",
-'C. Revision = $Id: mkrdns,v 1.59 2002/12/05 21:19:28 felicity Stab $',
-    "\n", "Help        = $help\n", "Quiet Mode  = $quiet\n",
+    "Help        = $help\n", "Quiet Mode  = $quiet\n",
     "Root Dir    = $rootdir\n";
   print "Extension   = $ext\n" if ($ext);
-  print "Hash Func   = 32-bit checksum\n";
   print "\n";
 }
 
@@ -174,9 +172,9 @@ READCONF: {
   open( CONF, "<$bootfile" ) || die "(fatal) Can't open $bootfile:$!";
   while ( $_ = <CONF> ) {         # deal with the includes!
     if ( ( /^directory/i && $type eq "boot" )
-      || ( /\bdirectory\s+"[^"]+";/ && $type eq "conf" ) )
+      || ( /^\s*\bdirectory\s+"[^"]+";/ && $type eq "conf" ) )
     {
-      $nameddir = (m/\bdirectory\s+"?([^"\s]+)"?/i)[0];
+      $nameddir = (m/^\s*\bdirectory\s+"?([^"\s]+)"?/i)[0];
       print "(debug) Named Directory = $nameddir\n" if ($debug);
     }
 
