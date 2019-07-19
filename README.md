@@ -2,8 +2,8 @@
 
 An automatic reverse DNS zone generator.
 
-This is a fork of [mkrdns](https://sites.google.com/a/kluge.net/mkrdns/).
-Description from that site:
+This is a fork of [oasys/mkrdns](https://github.com/oasys/mkrdns) who originally forked this from [mkrdns](https://sites.google.com/a/kluge.net/mkrdns/).
+Description from the original site:
 
 > Have you ever gotten tired of having to change both the forward and
 > reverse zone maps when adding, removing, or changing hosts in DNS? If
@@ -26,20 +26,19 @@ Full documentation available via `perldoc mkrdns`.
 
 ## Added features
 
+- Fixed directory bug (original script failed if options like "managed-keys-directory" were set)
+
+## Added features by Jason Lavoie
+
 - full support for `$GENERATE` directive
 - IPv6 support
 - bind view support
 - various bugfixes
 
-## Comments
-
-I've used this tool for many years.  Due to its vintage, it is written
-in an old (perl4) style.  As much as possible, I've kept changes to
-mirror the original author's coding style.
-
 ## Credits
 
 Thanks to Theo Van Dinter (felicity@mkrdns.org) for original script.
+Thanks also to Jason Lavoie (https://github.com/oasys) and  Dan Pritts (https://github.com/danpritts) for their enhancements and fixes.
 
 ## License
 
