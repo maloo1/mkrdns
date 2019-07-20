@@ -24,9 +24,11 @@ Description from the original site:
 
 Full documentation available via `perldoc mkrdns`.
 
-## Added features
+## Added features/bug fixes
 
 - Fixed directory bug (original script failed if options like "managed-keys-directory" were set)
+- Fixed bug that caused first $ORIGIN to be deleted if before SOA (possibly required for SOA)
+- Fixed bug that caused a double dot insertion onto the FQDN if $ORIGIN is just "." 
 
 ## Added features by Jason Lavoie
 
