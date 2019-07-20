@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 #
-# mkrdns - Make Reverse DNS - Version 3.3
+# mkrdns - Make Reverse DNS
 #
-# By: Theo Van Dinter (felicity@mkrdns.org) (c) 1998-2002
-# Revision Info: $Id: mkrdns,v 1.59 2002/12/05 21:19:28 felicity Stab $
+# Updated by: Paul Johnston (https://github.com/maloo1/mkrdns)
+#
+# Original Script By: Theo Van Dinter (felicity@mkrdns.org) (c) 1998-2002
 #
 # The goal of this script is to automatically generate new reverse IP
 # mapping zone files for DNS/BIND.  It's been done before, but there
@@ -49,7 +50,7 @@ my ($rootdir)  = "/";    # root directory for files
 my ( $i, @domains, %networks, %maps, %serial, %mips, %hash, %netmap, @toskip );
 my ( %zonetoskip, $nameddir, %numordate, %files, $toskip, $ignoreslaves );
 my ( %mcnames, %arpa );
-my ($pversion)  = "3.5";
+my ($pversion)  = "3.6";
 my ($whichhash) = undef;    # which hash function to use
 
 # Get commandline parameters
@@ -399,14 +400,26 @@ REVERSE: {
       print "(debug) Scanning $file for non-PTR lines:\n" if ($debug);
       seek( IN, 0, 0 );
 
-      # strip out PTR, $ORIGIN, and $INCLUDE ...
-      $maps{$view}->{$net} =
-        join ( "", grep( !/(\s+PTR\s+|^\$(ORIGIN|INCLUDE))/i, <IN> ) );
+      # strip out PTR and $INCLUDE ...
+      $i = join ( "", grep( !/(\s+PTR\s+|^\$(INCLUDE))/i, <IN> ) );
       close(IN);
+
+      $i =~ s/\s*;.*?$//g;    # remove comments
+
+      #Remove all $ORIGIN enteries except if there is one on the first line (as this does not get replaced)
+      my $temp;
+      my $line_count = 0;
+      for my $line (split /\n/, $i) {
+        $line_count++;
+        unless($line =~ /^\$ORIGIN/i and $line_count > 1 ) { #Keep the first $ORIGIN if it exists
+          $temp = $temp . $line . "\n" # remove all other $ORIGIN entries
+        }
+      }
+      $maps{$view}->{$net} = $temp;
+      $i = $temp;
 
       # Pick out the serial number ( required to be the first RR,
       # so the regexp is not too complex. )
-      ( $i = $maps{$view}->{$net} ) =~ s/\s*;.*?$//g;    # remove comments
       ( $serial{$file} ) = ( $i =~ m!\s+SOA\s+\S+\s+\S+\s+(?:\(\s*)?(\d+)!is );
 
       # Expand $GENERATE for CNAMEs
@@ -426,11 +439,7 @@ REVERSE: {
       }
 
       if ($debug) {    # print out non-PTR records (long...?)
-        foreach $i (
-          split ( /\n/, $maps{$view}->{$net} ),
-          "Parsed serial number: $serial{$file}"
-          )
-        {
+        foreach $i (split ( /\n/, $maps{$view}->{$net} ), "Parsed serial number: $serial{$file}"){
           print "(debug) $i\n";
         }
       }
@@ -556,7 +565,11 @@ m!^(\S*)(?:\s+(?:\d+|(?:\d+[wdhms])+|IN|CS|CH|HS)){0,2}\s+(\w+)\s+(\S+)!i
         $host = $last;
       }
       elsif ( $host !~ /\.$/ ) {    # relative hostname
-        $last = $host = "$host.$end";
+        if ( $end eq "." ) {        # If origin is just '.' make sure not to add 2 dots!
+          $last = $host = "$host.";
+        }else {
+          $last = $host = "$host.$end";
+        }
       }
       else {                        # FQDN!
         $last = $host;
